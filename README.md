@@ -11,7 +11,7 @@ Reference : https://github.com/eriklindernoren/PyTorch-YOLOv3
 #### 2. Prepare data
 
 Put all .png and .cnn files in `img_and_cnn` directory  
-Write the names of files in `image_list.txt`
+Write the names of files in `image_list.txt` (Already written)
 
 #### 3. Create table
 ```
