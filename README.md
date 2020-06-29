@@ -24,7 +24,7 @@ You can find tables in `data` directory
 python image_cropping.py
 ```
  
-#### 5. Training
+#### 5. Training and validation
 ```
 cd weights/
 bash download_weights.sh
