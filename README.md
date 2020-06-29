@@ -4,7 +4,7 @@ Reference : https://github.com/eriklindernoren/PyTorch-YOLOv3
  
 #### 1.Clone
  ```
- git clone https://github.com/eriklindernoren/PyTorch-YOLOv3
+ git clone https://github.com/YuichiNAGAO/stage.git
  cd stage
  ```
 
