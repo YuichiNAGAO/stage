@@ -2,29 +2,29 @@
 
 Reference : https://github.com/eriklindernoren/PyTorch-YOLOv3
  
-#### 1.Clone
+#### 1. Clone
  ```
  git clone https://github.com/YuichiNAGAO/stage.git
  cd stage
  ```
 
-#### 2.Prepare data
+#### 2. Prepare data
 
 Put all .png and .cnn files in `img_and_cnn` directory  
 Write the names of files in `image_list.txt`
 
-#### 3.Create table
+#### 3. Create table
 ```
 python annotation_process.py
 ```
 You can find tables in `data` directory 
 
-#### 4.Crop images and split data
+#### 4. Crop images and split data
 ```
 python image_cropping.py
 ```
  
-#### 5.Training
+#### 5. Training
 ```
 cd weights/
 bash download_weights.sh
