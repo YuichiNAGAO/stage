@@ -1,13 +1,12 @@
-# Name（リポジトリ/プロジェクト/OSSなどの名前）
+# Implementation　for palm tree detectionN　using Yolo-v3 （リポジトリ/プロジェクト/OSSなどの名前）
+
+Reference:https://github.com/eriklindernoren/PyTorch-YOLOv3
  
-分かりやすくてカッコイイ名前をつける（今回は"hoge"という名前をつける）
+# Clone
  
-"hoge"が何かを簡潔に紹介する
- 
-# DEMO
- 
-"hoge"の魅力が直感的に伝えわるデモ動画や図解を載せる
- 
+$ git clone https://github.com/eriklindernoren/PyTorch-YOLOv3
+$ cd Stage
+
 # Features
  
 "hoge"のセールスポイントや差別化などを説明する
