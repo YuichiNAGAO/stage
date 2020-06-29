@@ -1,4 +1,4 @@
-# Implementation　for palm tree detectionN　using Yolo-v3 （リポジトリ/プロジェクト/OSSなどの名前）
+# Implementation for palm tree detection using Yolo-v3 
 
 Reference : https://github.com/eriklindernoren/PyTorch-YOLOv3
  
@@ -10,7 +10,7 @@ Reference : https://github.com/eriklindernoren/PyTorch-YOLOv3
 
 #### 2.Prepare data
 
-Put all .png and .cnn files in `img_and_cnn` directory
+Put all .png and .cnn files in `img_and_cnn` directory  
 Write the names of files in `image_list.txt`
 
 #### 3.Create table
