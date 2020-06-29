@@ -17,6 +17,7 @@ Write the names of files in `image_list.txt`
 ```
 python annotation_process.py
 ```
+You can find table in `data` directory 
 
 #### 4.Crop images and split data
 ```
