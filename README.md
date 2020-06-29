@@ -1,11 +1,11 @@
 # Implementation　for palm tree detectionN　using Yolo-v3 （リポジトリ/プロジェクト/OSSなどの名前）
 
-Reference:https://github.com/eriklindernoren/PyTorch-YOLOv3
+Reference : https://github.com/eriklindernoren/PyTorch-YOLOv3
  
-# Clone
+#### Clone
  
-$ git clone https://github.com/eriklindernoren/PyTorch-YOLOv3
-$ cd Stage
+ $ git clone https://github.com/eriklindernoren/PyTorch-YOLOv3
+ $ cd Stage
 
 # Features
  
