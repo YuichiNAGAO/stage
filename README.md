@@ -37,5 +37,5 @@ In the case `--classes 3` : Classification problem become Raphia+Others.<br>
 cd weights/
 bash download_weights.sh
 cd ..
-python  train.py --epochs 1000 --data_config config/custom.data --pretrained_weights weights/darknet53.conv.74
+python  train.py --epochs 100 --data_config config/custom.data --pretrained_weights weights/darknet53.conv.74 --cropping_config 2 --classes 1
 ```
