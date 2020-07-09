@@ -25,8 +25,8 @@ python image_cropping.py
 ```
  
 #### 5. Training and validation
-There are towo options to label the bounding box. By adding `--cropping_config [option]` to command line, you can set the way labeling bounding box.
-In the case `--cropping_config 1` : set the bounding box if all parts of the tree are included in the image. 
+There are towo options to label the bounding box. By adding `--cropping_config [option]` to command line, you can set the way labeling bounding box.<br>
+In the case `--cropping_config 1` : set the bounding box if all parts of the tree are included in the image. <br>
 In the case `--cropping_config 2` : set the bounding box if the center of the tree is in the image.
 ```
 cd weights/
