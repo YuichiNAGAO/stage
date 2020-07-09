@@ -39,3 +39,10 @@ bash download_weights.sh
 cd ..
 python  train.py --epochs 100 --data_config config/custom.data --pretrained_weights weights/darknet53.conv.74 --cropping_config 2 --classes 1
 ```
+
+#### 6. Result
+You can check the trace of training and validation by Tensorboard.
+```
+tensorboard --logdir='logs' --port=6006
+```
+Go to http://localhost:6006/
