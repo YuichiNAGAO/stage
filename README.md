@@ -17,7 +17,8 @@ Write the names of files in `image_list.txt` (Already written)
 ```
 python annotation_process.py
 ```
-You can find tables in `data` directory 
+You can find tables in `data` directory.
+It takes 5 to 10 minutes per image to complete the operation.
 
 #### 4. Crop images and split data
 ```
