@@ -12,13 +12,20 @@ Reference : https://github.com/eriklindernoren/PyTorch-YOLOv3
 
 Put all .png and .cnn files in `img_and_cnn` directory  
 Write the names of files in `image_list.txt` (Already written)
+The contents of image_list.txt would be like
+ ```
+ Sce_CocoRaph500_All_SIS_H.png Sce_CocoRaph500_Cl_SI_H.png Sce_CocoRaph500_Cl_Segv1.cnn
+Sce_CocoRaph900H_All_SIS_H.png Sce_CocoRaph900H_All_Cl_H.png Sce_CocoRaph900H_All_Cl_H_Segv1.cnn
+Sce_CocoRaphBig630_All_WS_SI_H.png Sce_CocoRaphBig630_Cl_SI_H.png Sce_CocoRaphBig630_Cl_SI_H_Segv1.cnn
+Sce_CocoRaphBig400_HRA_All_WS_SI_H.png Sce_CocoRaphBig400_HRA_Cl_SI_H.png Sce_CocoRaphBig400_HRA_Cl_SI_H_Segv1.cnn
+ ```
 
 #### 3. Create table
 ```
 python annotation_process.py
 ```
 You can find tables in `data` directory.
-It takes 5 to 10 minutes per image to complete the operation.
+It takes 5 minutes (small image) to 20 minutes (big image) to complete the operation.
 
 #### 4. Crop images and split data
 ```
