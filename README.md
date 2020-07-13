@@ -10,9 +10,9 @@ Reference : https://github.com/eriklindernoren/PyTorch-YOLOv3
 
 #### 2. Prepare data
 
-Put all .png and .cnn files in `img_and_cnn` directory  <br>
-Write the names of files in `image_list.txt` <br>
-The contents of image_list.txt would be like
+Put all .png and .cnn files in `img_and_cnn` directory.  <br>
+Write the names of files in `image_list.txt`. <br>
+The contents of `image_list.txt` would be like
  ```
  Sce_CocoRaph500_All_SIS_H.png Sce_CocoRaph500_Cl_SI_H.png Sce_CocoRaph500_Cl_Segv1.cnn
 Sce_CocoRaph900H_All_SIS_H.png Sce_CocoRaph900H_All_Cl_H.png Sce_CocoRaph900H_All_Cl_H_Segv1.cnn
