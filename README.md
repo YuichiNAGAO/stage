@@ -29,12 +29,12 @@ It takes 5 minutes (small image) to 20 minutes (big image) to complete the opera
 Once you run this code, you won't have to run it again when you want to try out multiple models. The table is permanently stored in `data` directory.
 
 #### 4. Crop images and split data
-Write the names of files in `image_list_train.txt` and `image_list_test.txt`.
+Write the names of files in `image_list_train.txt` and `image_list_test.txt`.<br>
 The contents of `image_list_train.txt` would be like
 ```
 Sce_CocoRaph900H_All_SIS_H.png Sce_CocoRaph900H_All_Cl_H.png Sce_CocoRaph900H_All_Cl_H_Segv1.cnn
 ```
-The contents of `image_list_train.txt` would be like
+The contents of `image_list_test.txt` would be like
 ```
  Sce_CocoRaph500_All_SIS_H.png Sce_CocoRaph500_Cl_SI_H.png Sce_CocoRaph500_Cl_Segv1.cnn
 ```
