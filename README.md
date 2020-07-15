@@ -25,7 +25,8 @@ Sce_CocoRaphBig400_HRA_All_WS_SI_H.png Sce_CocoRaphBig400_HRA_Cl_SI_H.png Sce_Co
 python annotation_process.py
 ```
 You can find tables in `data` directory.
-It takes 5 minutes (small image) to 20 minutes (big image) to complete the operation.
+It takes 5 minutes (small image) to 20 minutes (big image) to complete the operation.<br>
+Once you run this code, you won't have to run it again when you want to try out multiple models. The table is permanently stored in `data` directory.
 
 #### 4. Crop images and split data
 ```
