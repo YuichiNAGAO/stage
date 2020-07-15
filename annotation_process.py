@@ -32,7 +32,7 @@ def save_list(obj,filename):
         f.write("\n")
     f.close()
     
-with open("image_list.txt") as f:
+with open("image_list_table.txt") as f:
     l_strip = [s.strip() for s in f.readlines()]    
     
 Nmax = 256 * 256 * 256
