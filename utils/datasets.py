@@ -57,14 +57,20 @@ class ImageFolder(Dataset):
 
 
 class ListDataset(Dataset):
-    def __init__(self, list_path, img_size=416, augment=True, multiscale=True, normalized_labels=True):
+    def __init__(self, list_path, crop_config, img_size=416, augment=True, multiscale=True, normalized_labels=True):
         with open(list_path, "r") as file:
             self.img_files = file.readlines()
 
-        self.label_files = [
-            path.replace("images", "labels").replace(".png", ".txt").replace(".jpg", ".txt")
-            for path in self.img_files
-        ]
+        if crop_config==1:
+            self.label_files = [
+                path.replace("images", "labels").replace(".png", ".txt").replace(".jpg", ".txt")
+                for path in self.img_files
+            ]
+        elif crop_config==2:
+            self.label_files = [
+                path.replace("images", "labels_2").replace(".png", ".txt").replace(".jpg", ".txt")
+                for path in self.img_files
+            ]
         self.img_size = img_size
         self.max_objects = 100
         self.augment = augment
@@ -149,3 +155,4 @@ class ListDataset(Dataset):
 
     def __len__(self):
         return len(self.img_files)
+
