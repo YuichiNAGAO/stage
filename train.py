@@ -42,6 +42,8 @@ if __name__ == "__main__":
     parser.add_argument("--evaluation_interval", type=int, default=1, help="interval evaluations on validation set")
     parser.add_argument("--compute_map", default=False, help="if True computes mAP every tenth batch")
     parser.add_argument("--multiscale_training", default=True, help="allow for multi-scale training")
+    parser.add_argument("--cropping_config",type=int, default=1, help="type of cinfigration of cropping, choose 1 or 2")
+    parser.add_argument("--classes",type=int, default=1, help="0:Coco+Raphia, 1:Coco+Raphia+Others, 2:Coco+Others, 3:Raphia+Others")
     opt = parser.parse_args()
     print(opt)
 
@@ -53,10 +55,12 @@ if __name__ == "__main__":
     os.makedirs("checkpoints", exist_ok=True)
 
     # Get data configuration
+    arrange_data(opt.classes,opt.cropping_config)
     data_config = parse_data_config(opt.data_config)
     train_path = data_config["train"]
     valid_path = data_config["valid"]
     class_names = load_classes(data_config["names"])
+    print(class_names)
 
     # Initiate model
     model = Darknet(opt.model_def).to(device)
@@ -70,7 +74,7 @@ if __name__ == "__main__":
             model.load_darknet_weights(opt.pretrained_weights)
 
     # Get dataloader
-    dataset = ListDataset(train_path, augment=True, multiscale=opt.multiscale_training)
+    dataset = ListDataset(train_path, opt.cropping_config, augment=True, multiscale=opt.multiscale_training)
     dataloader = torch.utils.data.DataLoader(
         dataset,
         batch_size=opt.batch_size,
@@ -159,6 +163,7 @@ if __name__ == "__main__":
             precision, recall, AP, f1, ap_class = evaluate(
                 model,
                 path=valid_path,
+                crop_config=opt.cropping_config,
                 iou_thres=0.5,
                 conf_thres=0.5,
                 nms_thres=0.5,
@@ -182,3 +187,4 @@ if __name__ == "__main__":
 
         if (epoch+1) % opt.checkpoint_interval == 0:
             torch.save(model.state_dict(), f"checkpoints/yolov3_ckpt_%d.pth" % (epoch+1))
+
