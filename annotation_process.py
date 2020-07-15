@@ -53,7 +53,7 @@ for image_cnn in l_strip:
         list_cnn = [s.strip() for s in f.readlines()]
     list_cnn=list_cnn[2:]
     for i in list_cnn:        
-        if "Coco" in i.split()[2] or "coco" in i.split()[2] or "COCO" in i.split()[2] :
+        if "Coco" in i.split()[2] or "coco" in i.split()[2] or "COCO" in i.split()[2] or "cOCo" in i.split()[2] :
             nb=int(i.split()[3])+int(i.split()[4])*256+int(i.split()[5])*256*256
             table_data[nb]["type"]="Coco"
             table_data[nb]["red"]=i.split()[3]
@@ -67,6 +67,14 @@ for image_cnn in l_strip:
             table_data[nb]["green"]=i.split()[4]
             table_data[nb]["blue"]=i.split()[5]  
             util[nb]=1
+        else:
+            nb=int(i.split()[3])+int(i.split()[4])*256+int(i.split()[5])*256*256
+            table_data[nb]["type"]="Others"
+            table_data[nb]["red"]=i.split()[3]
+            table_data[nb]["green"]=i.split()[4]
+            table_data[nb]["blue"]=i.split()[5]  
+            util[nb]=1
+            
     height=img.shape[0]
     width=img.shape[1]   
     for i in tqdm(range(height)):
