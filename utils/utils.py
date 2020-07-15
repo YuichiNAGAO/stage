@@ -9,6 +9,7 @@ from torch.autograd import Variable
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+import glob
 
 
 def to_cpu(tensor):
@@ -22,6 +23,14 @@ def load_classes(path):
     fp = open(path, "r")
     names = fp.read().split("\n")[:-1]
     return names
+
+def save_list(obj,filename):
+    f = open(filename,'w')
+    for i in obj:
+        for j in i:
+            f.write(str(j)+" ")
+        f.write("\n")
+    f.close()
 
 
 def weights_init_normal(m):
@@ -319,3 +328,73 @@ def build_targets(pred_boxes, pred_cls, target, anchors, ignore_thres):
 
     tconf = obj_mask.float()
     return iou_scores, class_mask, obj_mask, noobj_mask, tx, ty, tw, th, tcls, tconf
+
+def arrange_data(type_class,cropping_config):
+    if type_class==0:
+        f = open("data/custom/classes.names",'w')
+        f.write("Coco\n")
+        f.write("Raphia\n")
+        f.close()
+        with open("config/custom.data") as f:
+            data=f.read().replace("3","2")
+        with open("config/custom.data",mode="w") as f:
+            f.write(data)
+    elif type_class==1:
+        f = open("data/custom/classes.names",'w')
+        f.write("Coco\n")
+        f.write("Raphia\n")
+        f.write("Others\n")
+        f.close()
+        with open("config/custom.data") as f:
+            data=f.read().replace("2","3")
+        with open("config/custom.data",mode="w") as f:
+            f.write(data)
+    elif type_class==2:
+        f = open("data/custom/classes.names",'w')
+        f.write("Coco\n")
+        f.write("Others\n")
+        f.close()
+        with open("config/custom.data") as f:
+            data=f.read().replace("3","2")
+        with open("config/custom.data",mode="w") as f:
+            f.write(data)
+        if cropping_config==1:
+            for file in glob.glob("data/custom/labels/*"):
+                with open(file,"r") as f:
+                    l=[]
+                    for txt in f.read().split("\n")[:-1]:
+                        l.append(list(txt.split(" ")[0].replace("2","1"))+txt.split(" ")[1:-1])
+                save_list(l,file)
+        elif cropping_config==2:
+            for file in glob.glob("data/custom/labels_2/*"):
+                with open(file,"r") as f:
+                    l=[]
+                    for txt in f.read().split("\n")[:-1]:
+                        l.append(list(txt.split(" ")[0].replace("2","1"))+txt.split(" ")[1:-1])
+                save_list(l,file)
+    elif type_class==3:
+        f = open("data/custom/classes.names",'w')
+        f.write("Others\n")
+        f.write("Raphia\n")
+        f.close()
+        with open("config/custom.data") as f:
+            data=f.read().replace("3","2")
+        with open("config/custom.data",mode="w") as f:
+            f.write(data)
+        if cropping_config==1:
+            for file in glob.glob("data/custom/labels/*"):
+                with open(file,"r") as f:
+                    l=[]
+                    for txt in f.read().split("\n")[:-1]:
+                        l.append(list(txt.split(" ")[0].replace("2","0"))+txt.split(" ")[1:-1])
+                save_list(l,file)
+        elif cropping_config==2:
+            for file in glob.glob("data/custom/labels_2/*"):
+                with open(file,"r") as f:
+                    l=[]
+                    for txt in f.read().split("\n")[:-1]:
+                        l.append(list(txt.split(" ")[0].replace("2","0"))+txt.split(" ")[1:-1])
+                save_list(l,file)
+
+
+
