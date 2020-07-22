@@ -18,7 +18,13 @@ import time
 import datetime
 import argparse
 import warnings
-
+import json
+import cv2
+import glob
+import numpy as np
+import shutil
+from tqdm import tqdm
+import random
 
 import torch
 from torch.utils.data import DataLoader
@@ -27,9 +33,18 @@ from torchvision import transforms
 from torch.autograd import Variable
 import torch.optim as optim
 
+
+def arange_dir(path):
+    os.makedirs(path, exist_ok=True)
+    for file in glob.glob(path+"/*"):
+        os.remove(file)
+
+
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=UserWarning)
     parser = argparse.ArgumentParser()
+    parser.add_argument("--model_name", type=str, help="set model name")
+    parser.add_argument('--shuffle_train_valid', action='store_true')
     parser.add_argument("--epochs", type=int, default=100, help="number of epochs")
     parser.add_argument("--batch_size", type=int, default=8, help="size of each image batch")
     parser.add_argument("--gradient_accumulations", type=int, default=2, help="number of gradient accums before step")
@@ -46,7 +61,76 @@ if __name__ == "__main__":
     parser.add_argument("--classes",type=int, default=1, help="0:Coco+Raphia, 1:Coco+Raphia+Others, 2:Coco+Others, 3:Raphia+Others")
     opt = parser.parse_args()
     print(opt)
+    arange_dir("data/custom/images_with_bb")
+    arange_dir("data/custom/images_with_bb_2")
+    arange_dir("data/custom/labels_not_yolo")
+    arange_dir("data/custom/labels_not_yolo_2")
+    arange_dir("data/custom/labels")
+    arange_dir("data/custom/images")
+    arange_dir("data/custom/labels_2")
+    
+            
+    with open("image_list_train.txt") as f:
+        l_strip_train = [s.strip() for s in f.readlines()]    
+    if l_strip_train:
+        nb_train=operation(l_strip_train,0)
+    
+       
+    with open("image_list_valid.txt") as f:
+        l_strip_valid = [s.strip() for s in f.readlines()]    
+    if l_strip_valid:
+        nb_valid=operation(l_strip_valid,nb_train)
 
+    path_train="data/custom/train.txt"
+    path_valid="data/custom/valid.txt"
+    if os.path.exists(path_train):
+        os.remove(path_train)
+    if os.path.exists(path_valid):
+        os.remove(path_valid)
+
+    files=sorted(glob.glob('data/custom/images/*'))
+    print(nb_train)
+    print(nb_valid)
+
+    if opt.shuffle_train_valid:
+        nb_train=int(len(files)*0.75)
+
+        files_shuffled=random.sample(files, len(files))
+
+        for file in files_shuffled[:nb_train]:
+            f = open(path_train, 'a') # 書き込みモードで開く
+            f.write(file+"\n") # 引数の文字列をファイルに書き込む
+            f.close()
+
+        for file in files_shuffled[nb_train:]:
+            f = open(path_valid, 'a') # 書き込みモードで開く
+            f.write(file+"\n") # 引数の文字列をファイルに書き込む
+            f.close()
+
+    if not opt.shuffle_train_valid:
+
+        for file in files[:nb_train]:
+            f = open(path_train, 'a') # 書き込みモードで開く
+            f.write(file+"\n") # 引数の文字列をファイルに書き込む
+            f.close()
+        if len(files)>nb_train*1.3:
+            for file in files[nb_train:int(nb_train*1.3)]:
+                f = open(path_valid, 'a') # 書き込みモードで開く
+                f.write(file+"\n") # 引数の文字列をファイルに書き込む
+                f.close()
+        else:
+            for file in files[nb_train:]:
+                f = open(path_valid, 'a') # 書き込みモードで開く
+                f.write(file+"\n") # 引数の文字列をファイルに書き込む
+                f.close()
+
+    data_dict=opt.__dict__
+    data_dict["training image"]=' '.join(l_strip_train)
+    data_dict["validation image"]=' '.join(l_strip_valid)
+
+    with open("./config/models/"+opt.model_name+".json", mode="w") as f:
+        json.dump(data_dict, f, indent=4)    
+    
     logger = Logger("logs")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -185,6 +269,6 @@ if __name__ == "__main__":
             print(AsciiTable(ap_table).table)
             print(f"---- mAP {AP.mean()}")
 
-        if (epoch+1) % opt.checkpoint_interval == 0:
-            torch.save(model.state_dict(), f"checkpoints/yolov3_ckpt_%d.pth" % (epoch+1))
+        if (epoch+1) % opt.epochs == 0:
+            torch.save(model.state_dict(), "checkpoints/{}.pth".format(opt.model_name))
 
