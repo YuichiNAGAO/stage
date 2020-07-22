@@ -57,7 +57,7 @@ python  train.py --model_name [model name] --epochs 100 --data_config config/cus
 ```
 
 #### 5. Testing
-- Write the names of files which you want to use as testing data in `image_list_test.txt`.<br>
+Write the names of files which you want to use as testing data in `image_list_test.txt`.<br>
 The contents of `image_list_test.txt` would be like
 ```
 Sce_CocoRaph900H_All_SIS_H.png 
