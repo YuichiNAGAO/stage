@@ -43,7 +43,7 @@ for image_cnn in l_strip:
     file_png="img_and_cnn/"+image_cnn.split()[1]
     file_cnn="img_and_cnn/"+image_cnn.split()[2]
     img = cv2.imread(file_png)
-    name_file=image_cnn.split()[0].split('_')[0]+'_'+image_cnn.split()[0].split('_')[1]+"_table.txt"
+    name_file=image_cnn.split()[0].split('.')[0]+".txt"
     table_data=[]
     util=[0 for _ in range(Nmax+1)]
     for _ in range(Nmax+1):
