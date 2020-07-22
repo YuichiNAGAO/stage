@@ -1,3 +1,4 @@
+import cv2
 import glob
 import random
 import os
@@ -54,7 +55,31 @@ class ImageFolder(Dataset):
 
     def __len__(self):
         return len(self.files)
+    
+class Image_big(Dataset):
+    def __init__(self, folder_path, step=624, crop_size=832 ,img_size=416):
+        self.step=step
+        self.crop_size=crop_size
+        self.img=cv2.imread(folder_path)
+        self.nb_image_h=self.img.shape[0]//step
+        self.nb_image_w=self.img.shape[1]//step
+        self.nb_images=self.nb_image_h*self.nb_image_w
+        self.img_size = img_size
 
+    def __getitem__(self, index):
+        num=index % self.nb_images
+        y=num//self.nb_image_w
+        x=num%self.nb_image_w
+        input_imgs=np.copy(self.img[y*self.step:y*self.step+self.crop_size,x*self.step:x*self.step+self.crop_size])
+        input_imgs = cv2.resize(input_imgs , (self.img_size, self.img_size))
+        input_imgs = cv2.cvtColor(input_imgs, cv2.COLOR_BGR2RGB)
+        input_imgs = transforms.ToTensor()(input_imgs )
+        # Extract image as PyTorch tensor
+        
+        return input_imgs
+
+    def __len__(self):
+        return self.nb_images
 
 class ListDataset(Dataset):
     def __init__(self, list_path, crop_config, img_size=416, augment=True, multiscale=True, normalized_labels=True):
