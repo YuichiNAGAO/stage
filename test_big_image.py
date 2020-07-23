@@ -105,6 +105,12 @@ dataloader = DataLoader(
         shuffle=False,
         num_workers=opt.n_cpu,
     )
+print(datasets_big.img.shape[0])
+print(datasets_big.img.shape[1])
+print(datasets_big.img_new.shape[0])
+print(datasets_big.img_new.shape[1])
+print(datasets_big.ratio_w)
+print(datasets_big.ratio_h)
 
 
 classes = load_classes("data/custom/classes.names")  # Extracts class labels from file
@@ -123,9 +129,10 @@ for batch_i, input_imgs in enumerate(tqdm(dataloader)):
     # Get detections
     with torch.no_grad():
         detections = model(input_imgs)
-        detections[...,0]+=416* x
-        detections[...,1]+=416* y
-                        
+        detections[...,0]+=312* x/datasets_big.ratio_w
+        detections[...,1]+=312* y/datasets_big.ratio_h
+        detections[...,2]/= datasets_big.ratio_w
+        detections[...,3]/= datasets_big.ratio_h
     if not batch_i:
         total_detections=detections
     else:
@@ -149,14 +156,10 @@ precision,recall,f=get_statistics_big(detections,table_new_tensor,opt.iou_thres)
 
 dict_result={"model name":opt.model_name, "test image":image ,"precision":precision,"recall":recall,"f value":f}
 
-with open("./output/"+opt.model_name+".json", mode="w") as f:
-        json.dump(data_dict, f, indent=4)    
+print("precision: ",precision)
+print("recall: ",recall)
+print("f value: ",f)
+
+with open("./output/"+opt.model_name+"_"+image+".json", mode="w") as f:
+        json.dump(dict_result, f, indent=4)    
     
-            
-            
-            
-            
-            
-            
-            
-      
