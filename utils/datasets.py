@@ -36,6 +36,12 @@ def random_resize(images, min_size=288, max_size=448):
     images = F.interpolate(images, size=new_size, mode="nearest")
     return images
 
+def test_image_resize(img,nb_h,nb_w,step=624, crop_size=832 ,img_size=416):
+    
+    img=cv2.resize(img , (nb_h*step+108, nb_w*step+108))
+  
+    
+
 
 class ImageFolder(Dataset):
     def __init__(self, folder_path, img_size=416):
@@ -55,6 +61,7 @@ class ImageFolder(Dataset):
 
     def __len__(self):
         return len(self.files)
+
     
 class Image_big(Dataset):
     def __init__(self, folder_path, step=624, crop_size=832 ,img_size=416):
@@ -63,6 +70,9 @@ class Image_big(Dataset):
         self.img=cv2.imread(folder_path)
         self.nb_image_h=self.img.shape[0]//step
         self.nb_image_w=self.img.shape[1]//step
+        self.img_new=cv2.resize(self.img , (self.nb_image_w*self.step+208,self.nb_image_h*self.step+208))
+        self.ratio_h=self.img_new.shape[0]/self.img.shape[0]
+        self.ratio_w=self.img_new.shape[1]/self.img.shape[1]
         self.nb_images=self.nb_image_h*self.nb_image_w
         self.img_size = img_size
 
@@ -70,7 +80,7 @@ class Image_big(Dataset):
         num=index % self.nb_images
         y=num//self.nb_image_w
         x=num%self.nb_image_w
-        input_imgs=np.copy(self.img[y*self.step:y*self.step+self.crop_size,x*self.step:x*self.step+self.crop_size])
+        input_imgs=np.copy(self.img_new[y*self.step:y*self.step+self.crop_size,x*self.step:x*self.step+self.crop_size])
         input_imgs = cv2.resize(input_imgs , (self.img_size, self.img_size))
         input_imgs = cv2.cvtColor(input_imgs, cv2.COLOR_BGR2RGB)
         input_imgs = transforms.ToTensor()(input_imgs )
