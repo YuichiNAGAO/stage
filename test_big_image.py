@@ -33,6 +33,16 @@ def class2num(class_name):
     else:
         return 2
 
+def str2num(classes):
+    if classes== "Coco+Raphia":
+        return 0
+    elif classes== "Coco+Raphia+Others":
+        return 1
+    elif classes== "Coco+Others":
+        return 2
+    elif num=="Raphia+Others" :
+        return 3
+    
 def get_statistics_big(outputs, targets, iou_threshold):
     output = outputs[0]
     pred_boxes = output[:, :4]
@@ -77,7 +87,7 @@ if __name__ == "__main__":
 
 with open("./config/models/"+opt.model_name+".json", mode="r") as f:
         df = json.load(f)    
-        classes_type=df['classes']
+        classes_type=str2num(df['classes'])
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 os.makedirs("output", exist_ok=True)
@@ -105,13 +115,6 @@ dataloader = DataLoader(
         shuffle=False,
         num_workers=opt.n_cpu,
     )
-print(datasets_big.img.shape[0])
-print(datasets_big.img.shape[1])
-print(datasets_big.img_new.shape[0])
-print(datasets_big.img_new.shape[1])
-print(datasets_big.ratio_w)
-print(datasets_big.ratio_h)
-
 
 classes = load_classes("data/custom/classes.names")  # Extracts class labels from file
 
@@ -154,7 +157,7 @@ table_new_tensor=torch.Tensor(table_new)
 precision,recall,f=get_statistics_big(detections,table_new_tensor,opt.iou_thres)    
 
 
-dict_result={"model name":opt.model_name, "test image":image ,"precision":precision,"recall":recall,"f value":f}
+dict_result={"model":df, "test image":image ,"precision":precision,"recall":recall,"f value":f}
 
 print("precision: ",precision)
 print("recall: ",recall)
@@ -163,3 +166,11 @@ print("f value: ",f)
 with open("./output/"+opt.model_name+"_"+image+".json", mode="w") as f:
         json.dump(dict_result, f, indent=4)    
     
+print("Result is saved in {}".format("output/"+opt.model_name+"_"+image+".json"))            
+            
+            
+            
+            
+            
+            
+      
