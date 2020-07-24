@@ -39,6 +39,16 @@ def arange_dir(path):
     for file in glob.glob(path+"/*"):
         os.remove(file)
 
+def num2str(num):
+    if num==0:
+        return "Coco+Raphia"
+    elif num==1:
+        return "Coco+Raphia+Others"
+    elif num==2:
+        return "Coco+Others"
+    elif num==3:
+        return "Raphia+Others"
+    
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=UserWarning)
@@ -127,6 +137,7 @@ if __name__ == "__main__":
     data_dict=opt.__dict__
     data_dict["training image"]=' '.join(l_strip_train)
     data_dict["validation image"]=' '.join(l_strip_valid)
+    data_dict["classes"]=num2str(opt.classes)
 
     with open("./config/models/"+opt.model_name+".json", mode="w") as f:
         json.dump(data_dict, f, indent=4)    
