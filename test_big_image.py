@@ -40,7 +40,7 @@ def str2num(classes):
         return 1
     elif classes== "Coco+Others":
         return 2
-    elif num=="Raphia+Others" :
+    elif classes=="Raphia+Others" :
         return 3
     
 def get_statistics_big(outputs, targets, iou_threshold):
@@ -174,3 +174,4 @@ print("Result is saved in {}".format("output/"+opt.model_name+"_"+image+".json")
             
             
       
+
