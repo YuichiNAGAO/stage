@@ -155,25 +155,21 @@ if __name__ == "__main__":
         table_new=[[class2num(line[1])  ,int(int(line[2])/2),int(int(line[4])/2),int(int(line[3])/2),int(int(line[5])/2)] for line in table]
 
     table_new_tensor=torch.Tensor(table_new)            
+    
+    target_cls =table_new_tensor[:,0].to('cpu').detach().numpy().copy()
+                        
+    precision_big,recall_big,f1_big,pred_scores,pred_labels,true_positives=get_statistics_big(detections,table_new_tensor,target_cls,opt.iou_thres)                
+    pres, rec, AP_big, f_val, ap_cls=ap_per_class(true_positives,pred_scores,pred_labels,target_cls)    
 
-    precision,recall,f=get_statistics_big(detections,table_new_tensor,opt.iou_thres)    
+    dict_result={"model":df, "test image":image ,"precision":precision_big,"recall":recall_big,"f value":f1_big,,"mAP":AP_big.mean()}
 
-
-    dict_result={"model":df, "test image":image ,"precision":precision,"recall":recall,"f value":f}
-
-    print("precision: ",precision)
-    print("recall: ",recall)
-    print("f value: ",f)
+    print("precision: ",precision_big)
+    print("recall: ",recall_big)
+    print("f value: ",f1_big)
+    print("mAP: ",AP_big.mean())
+    
 
     with open("./output/"+opt.model_name+"_"+image+".json", mode="w") as f:
             json.dump(dict_result, f, indent=4)    
 
     print("Result is saved in {}".format("output/"+opt.model_name+"_"+image+".json"))            
-
-
-
-
-
-
-
-
