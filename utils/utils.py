@@ -12,6 +12,22 @@ import glob
 import os
 import cv2
 from tqdm import tqdm
+import pdb
+
+
+class Timer():
+    def __init__(self):
+        self.o = time.time()
+
+    def measure(self, p=1):
+        x = (time.time() - self.o) / float(p)
+        x = int(x)
+        if x >= 3600:
+            return '{:.1f}h'.format(x / 3600)
+        if x >= 60:
+            return '{}m'.format(round(x / 60))
+        return '{}s'.format(x)
+
 
 
 def to_cpu(tensor):
@@ -70,7 +86,73 @@ def xywh2xyxy(x):
     return y
 
 
-def ap_per_class(tp, conf, pred_cls, target_cls):
+def ap_per_class(tp, conf, pred_cls, target_cls,detected_boxes):
+    """ Compute the average precision, given the recall and precision curves.
+    Source: https://github.com/rafaelpadilla/Object-Detection-Metrics.
+    # Arguments
+        tp:    True positives (list).
+        conf:  Objectness value from 0-1 (list).
+        pred_cls: Predicted object classes (list).
+        target_cls: True object classes (list).
+    # Returns
+        The average precision as computed in py-faster-rcnn.
+    """
+    
+    # Sort by objectness
+    #i = np.argsort(-conf)#indexマイナスがついているので大きい方から0
+    #tp, conf, pred_cls = tp[i], conf[i], pred_cls[i]#objectivenessが大きい順に並び替えている
+    
+    # Find unique classes
+    detected=target_cls[detected_boxes]
+    unique_classes = np.unique(target_cls)#array([0., 1.], dtype=float32)
+    false_pos_vacant=[]
+    false_pos=[]
+    neg1=pred_cls[tp==0]
+    neg2=pred_cls[tp==-1]
+    for classe in unique_classes:
+        false_pos_vacant.append(int(torch.sum(neg1==classe))) 
+        false_pos.append(int(torch.sum(neg2==classe))) 
+    tp=np.where(tp <=0, 0, 1)
+    
+    # Create Precision-Recall curve and compute AP for each class
+    ap, p, r = [], [], []
+    true_pos,ground_truth,num_predict=[],[],[]
+    for c_num,classe in enumerate(unique_classes):
+        i = pred_cls == classe
+        n_gt = (target_cls == classe).sum()  #Number of ground truth objects
+        n_p = i.sum()  # Number of predicted objects
+        num_predict.append(int(n_p))
+        if n_p == 0 and n_gt == 0:
+            continue
+        elif n_p == 0 or n_gt == 0:
+            ap.append(0)
+            r.append(0)
+            p.append(0)
+        else:
+            # Accumulate FPs and TPs
+            fpc = (1 - tp[i]).cumsum()
+            tpc = (tp[i]).cumsum()
+            # Recall
+            recall_curve = tpc / (n_gt + 1e-16)
+            r.append(recall_curve[-1])
+
+            # Precision
+            precision_curve = tpc / (tpc + fpc)
+            p.append(precision_curve[-1])                     
+
+            # AP from recall-precision curve
+            ap.append(compute_ap(recall_curve, precision_curve))
+            true_pos.append(int(tpc[-1]))
+            ground_truth.append(int(n_gt))
+    #false_neg=[n_gt[0]-true_pos[0]-false_pos[1],n_gt[1]-true_pos[1]-false_pos[0]]                                
+
+    # Compute F1 score (harmonic mean of precision and recall)
+    p, r, ap = np.array(p), np.array(r), np.array(ap)
+    f1 = 2 * p * r / (p + r + 1e-16)
+    
+    return p, r, ap, f1, unique_classes.astype("int32"),false_pos_vacant,true_pos,false_pos,ground_truth,num_predict
+
+def ap_per_class_2(tp, conf, pred_cls, target_cls):
     """ Compute the average precision, given the recall and precision curves.
     Source: https://github.com/rafaelpadilla/Object-Detection-Metrics.
     # Arguments
@@ -91,7 +173,7 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
 
     # Create Precision-Recall curve and compute AP for each class
     ap, p, r = [], [], []
-    for c in tqdm(unique_classes, desc="Computing AP"):
+    for c in unique_classes:
         i = pred_cls == c
         n_gt = (target_cls == c).sum()  # Number of ground truth objects
         n_p = i.sum()  # Number of predicted objects
@@ -124,7 +206,6 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
 
     return p, r, ap, f1, unique_classes.astype("int32")
 
-
 def compute_ap(recall, precision):
     """ Compute the average precision, given the recall and precision curves.
     Code originally from https://github.com/rbgirshick/py-faster-rcnn.
@@ -156,7 +237,7 @@ def compute_ap(recall, precision):
 def get_batch_statistics(outputs, targets, iou_threshold):
     """ Compute true positives, predicted scores and predicted labels per sample """
     batch_metrics = []
-    for sample_i in range(len(outputs)):
+    for sample_i in range(len(outputs)):#batch_size分になる
 
         if outputs[sample_i] is None:
             continue
@@ -217,7 +298,7 @@ def bbox_iou(box1, box2, x1y1x2y2=True):
         b2_x1, b2_y1, b2_x2, b2_y2 = box2[:, 0], box2[:, 1], box2[:, 2], box2[:, 3]
 
     # get the corrdinates of the intersection rectangle
-    inter_rect_x1 = torch.max(b1_x1, b2_x1)
+    inter_rect_x1 = torch.max(b1_x1, b2_x1)#predと比べて大きい方をとる、出力はtorch.Size([986])
     inter_rect_y1 = torch.max(b1_y1, b2_y1)
     inter_rect_x2 = torch.min(b1_x2, b2_x2)
     inter_rect_y2 = torch.min(b1_y2, b2_y2)
@@ -400,7 +481,7 @@ def arrange_data(type_class,cropping_config):
 
 
 
-def operation(l_strip,num,step=208,size=832):
+def operation(l_strip,num,size=832,step=208):
     
     num_file=num
     for image_cnn in l_strip:
@@ -470,9 +551,9 @@ def operation(l_strip,num,step=208,size=832):
                         x_min=0
                     if y_min<0:
                         y_min=0
-                    if x_max>832:
+                    if x_max>size:
                         x_max=size
-                    if y_max>832:
+                    if y_max>size:
                         y_max=size
                     position_cropped_2[y_pos][x_pos].append([tree[1],x_min,x_max,y_min,y_max]) 
 
