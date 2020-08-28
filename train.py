@@ -61,11 +61,10 @@ if __name__ == "__main__":
     parser.add_argument("--gradient_accumulations", type=int, default=2, help="number of gradient accums before step")
     parser.add_argument("--model_def", type=str, default="config/yolov3.cfg", help="path to model definition file")
     parser.add_argument("--data_config", type=str, default="config/custom.data", help="path to data config file")
-    parser.add_argument("--pretrained_weights", type=str, help="if specified starts from checkpoint model")
+    parser.add_argument("--pretrained_weights", default="weights/darknet53.conv.74" ,type=str, help="if specified starts from checkpoint model")
     parser.add_argument("--n_cpu", type=int, default=8, help="number of cpu threads to use during batch generation")
-    parser.add_argument("--img_size", type=int, default=416, help="size of each image dimension")
+    parser.add_argument("--img_size", type=int, default=416, help="size of each image dimension, basically it shoud be fixed")
     parser.add_argument("--cropping_size", type=int, default=832, help="size of each cropped image dimension")
-    parser.add_argument("--cropping_step", type=int, default=208, help="step of cropping process")
     parser.add_argument("--checkpoint_interval", type=int, default=100, help="interval between saving model weights")
     parser.add_argument("--evaluation_interval", type=int, default=1, help="interval evaluations on validation set")
     parser.add_argument("--compute_map", default=False, help="if True computes mAP every tenth batch")
@@ -84,6 +83,9 @@ if __name__ == "__main__":
     num_class=opt.classes
     str_class=num2str(opt.classes)
     
+    cropping_step=opt.cropping_size//4
+    
+    red_ratio=float(opt.cropping_size/opt.img_size)
     
     with open("image_list_test.txt") as f:
         image_test=f.read().strip()
@@ -93,7 +95,7 @@ if __name__ == "__main__":
         table = [s.strip().split() for s in f.readlines()[1:]]  
 
 
-    datasets_big=Image_big('img_and_cnn/'+image_test)
+    datasets_big=Image_big('img_and_cnn/'+image_test,crop_size=opt.cropping_size)
 
     dataloader_big = DataLoader(
             datasets_big,
@@ -102,7 +104,7 @@ if __name__ == "__main__":
             num_workers=opt.n_cpu,
         )
     
-    files=sorted(glob.glob('data/custom/images/*'))
+    
     
     with open("image_list_train.txt") as f:
             l_strip_train = [s.strip() for s in f.readlines()]  
@@ -120,12 +122,14 @@ if __name__ == "__main__":
         arange_dir("data/custom/labels_2")
 
         if l_strip_train:
-            nb_train=operation(l_strip_train,0,opt.cropping_step,opt.cropping_size)
+            nb_train=operation(l_strip_train,0,opt.cropping_size,cropping_step)
 
         if l_strip_valid:
-            nb_valid=operation(l_strip_valid,nb_train,opt.cropping_step,opt.cropping_size)
+            nb_valid=operation(l_strip_valid,nb_train,opt.cropping_size,cropping_step)
+        files=sorted(glob.glob('data/custom/images/*'))
     
     else:
+        files=sorted(glob.glob('data/custom/images/*'))
         nb_train=int(len(files)*0.5)
 
     path_train="data/custom/train.txt"
@@ -174,12 +178,11 @@ if __name__ == "__main__":
     data_dict["validation image"]=' '.join(l_strip_valid)
     data_dict["classes"]=str_class
 
-    with open("./config/models/"+opt.model_name+".json", mode="w") as f:
-        json.dump(data_dict, f, indent=4)    
+    
     
     logger = Logger("logs")
     
-    log_name=str(opt.cropping_config)+"_"+str(num_class)+"_"+image_test.split('.')[0]+"_"+str(opt.epochs)
+    log_name=opt.model_name+"_"+str(opt.cropping_config)+"_"+str(num_class)+"_"+image_test.split('.')[0]+"_"+str(opt.epochs)
     
     log_dir='logs_epoch/'+log_name
     
@@ -242,7 +245,11 @@ if __name__ == "__main__":
         "conf_obj",
         "conf_noobj",
     ]
-
+    
+    board_sample=opt.epochs//100
+    if not board_sample:
+        board_sample=1
+    timer = Timer()   
     for epoch in range(opt.epochs):
         model.train()
         start_time = time.time()
@@ -325,7 +332,7 @@ if __name__ == "__main__":
             print(AsciiTable(ap_table).table)
             print(f"---- mAP {AP.mean()}")
         
-        if (epoch+1) % (opt.epochs//100) == 0:
+        if (epoch+1) % board_sample == 0:
             print("\nPerforming object detection in big image:")
             for batch_i, input_imgs in enumerate(tqdm(dataloader_big)):
                 input_imgs = Variable(input_imgs.type(Tensor))
@@ -334,8 +341,8 @@ if __name__ == "__main__":
                 # Get detections
                 with torch.no_grad():
                     detections = model(input_imgs)
-                    detections[...,0]+=312* x/datasets_big.ratio_w
-                    detections[...,1]+=312* y/datasets_big.ratio_h
+                    detections[...,0]+=datasets_big.img_size_3_4* x/datasets_big.ratio_w
+                    detections[...,1]+=datasets_big.img_size_3_4* y/datasets_big.ratio_h
                     detections[...,2]/= datasets_big.ratio_w
                     detections[...,3]/= datasets_big.ratio_h
                 if not batch_i:
@@ -347,30 +354,30 @@ if __name__ == "__main__":
             
             
             if num_class==2:
-                table_new=[[0 if line[1]=="Coco" else 1 ,int(int(line[2])/2),int(int(line[4])/2),int(int(line[3])/2),int(int(line[5])/2)] for line in table]
+                table_new=[[0 if line[1]=="Coco" else 1 ,int(int(line[2])/red_ratio),int(int(line[4])/red_ratio),int(int(line[3])/red_ratio),int(int(line[5])/red_ratio)] for line in table]
             elif num_class==3:
-                table_new=[[1 if line[1]=="Raphia" else 0 ,int(int(line[2])/2),int(int(line[4])/2),int(int(line[3])/2),int(int(line[5])/2)] for line in table]
+                table_new=[[1 if line[1]=="Raphia" else 0 ,int(int(line[2])/red_ratio),int(int(line[4])/red_ratio),int(int(line[3])/red_ratio),int(int(line[5])/red_ratio)] for line in table]
             elif num_class==1:
-                table_new=[[class2num(line[1])  ,int(int(line[2])/2),int(int(line[4])/2),int(int(line[3])/2),int(int(line[5])/2)] for line in table]
+                table_new=[[class2num(line[1])  ,int(int(line[2])/red_ratio),int(int(line[4])/red_ratio),int(int(line[3])/red_ratio),int(int(line[5])/red_ratio)] for line in table]
 
             table_new_tensor=torch.Tensor(table_new)            
             
             target_cls =table_new_tensor[:,0].to('cpu').detach().numpy().copy()
                         
-            precision_big,recall_big,f1_big,pred_scores,pred_labels,true_positives=get_statistics_big(detections,table_new_tensor,target_cls,opt.iou_thres)                
+            true_positives, pred_scores, pred_labels,detected_boxes=get_statistics_big(detections,table_new_tensor,target_cls,opt.iou_thres)                
             
  
-            pres, rec, AP_big, f_val, ap_cls=ap_per_class(true_positives,pred_scores,pred_labels,target_cls)
+            pres, rec, AP_big, f_val, ap_cls,false_pos_vacant,true_pos,false_pos,ground_truth,num_predict=ap_per_class(true_positives,pred_scores,pred_labels,target_cls,detected_boxes) 
             
-            print("precision: ",precision_big)
-            print("recall: ",recall_big)
-            print("f value: ",f1_big)
+            print("precision: ",pres.mean())
+            print("recall: ",rec.mean())
+            print("f value: ",f_val.mean())
             print("mAP: ",AP_big.mean())
-        
+            
             evaluation_metrics_big = [
-                ("val_precision_big", precision_big),
-                ("val_recall_big", recall_big),
-                ("val_f1_big", f1_big),
+                ("val_precision_big", pres.mean()),
+                ("val_recall_big", rec.mean()),
+                ("val_f1_big", f_val.mean()),
                 ("val_mAP_big", AP_big.mean()),
             ]
             
@@ -378,5 +385,7 @@ if __name__ == "__main__":
             
         if (epoch+1) % opt.epochs == 0:
             torch.save(model.state_dict(), "checkpoints/{}.pth".format(opt.model_name))
+    
         
-
+    with open("./config/models/"+opt.model_name+".json", mode="w") as f:
+        json.dump(data_dict, f, indent=4)    
