@@ -64,13 +64,15 @@ class ImageFolder(Dataset):
 
     
 class Image_big(Dataset):
-    def __init__(self, folder_path, step=624, crop_size=832 ,img_size=416):
-        self.step=step
+    def __init__(self, folder_path, crop_size=832 ,img_size=416):
+        self.step=int(crop_size*3/4)
+        self.img_size_3_4=int(img_size*3/4)
+        self.residual=int(crop_size*1/4)
         self.crop_size=crop_size
         self.img=cv2.imread(folder_path)
-        self.nb_image_h=self.img.shape[0]//step
-        self.nb_image_w=self.img.shape[1]//step
-        self.img_new=cv2.resize(self.img , (self.nb_image_w*self.step+208,self.nb_image_h*self.step+208))
+        self.nb_image_h=self.img.shape[0]//self.step
+        self.nb_image_w=self.img.shape[1]//self.step
+        self.img_new=cv2.resize(self.img , (self.nb_image_w*self.step+self.residual,self.nb_image_h*self.step+self.residual))
         self.ratio_h=self.img_new.shape[0]/self.img.shape[0]
         self.ratio_w=self.img_new.shape[1]/self.img.shape[1]
         self.nb_images=self.nb_image_h*self.nb_image_w
