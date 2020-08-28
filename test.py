@@ -10,7 +10,7 @@ import sys
 import time
 import datetime
 import argparse
-import tqdm
+
 
 import torch
 from torch.utils.data import DataLoader
@@ -33,7 +33,7 @@ def evaluate(model, path, crop_config, iou_thres, conf_thres, nms_thres, img_siz
 
     labels = []
     sample_metrics = []  # List of tuples (TP, confs, pred)
-    for batch_i, (_, imgs, targets) in enumerate(tqdm.tqdm(dataloader, desc="Detecting objects")):
+    for batch_i, (_, imgs, targets) in enumerate(dataloader):
 
         # Extract labels
         labels += targets[:, 1].tolist()
@@ -48,10 +48,11 @@ def evaluate(model, path, crop_config, iou_thres, conf_thres, nms_thres, img_siz
             outputs = non_max_suppression(outputs, conf_thres=conf_thres, nms_thres=nms_thres)
 
         sample_metrics += get_batch_statistics(outputs, targets, iou_threshold=iou_thres)
+    
 
     # Concatenate sample statistics
     true_positives, pred_scores, pred_labels = [np.concatenate(x, 0) for x in list(zip(*sample_metrics))]
-    precision, recall, AP, f1, ap_class = ap_per_class(true_positives, pred_scores, pred_labels, labels)
+    precision, recall, AP, f1, ap_class = ap_per_class_2(true_positives, pred_scores, pred_labels, labels)
 
     return precision, recall, AP, f1, ap_class
 
