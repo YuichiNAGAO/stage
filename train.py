@@ -26,6 +26,8 @@ import numpy as np
 import shutil
 from tqdm import tqdm
 import random
+import warnings
+
 
 import torch
 from torch.utils.data import DataLoader
@@ -55,7 +57,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_name", type=str, help="set model name")
     parser.add_argument('--shuffle_train_valid', action='store_true')
-    parser.add_argument('--recreate_data', action='store_true')
+    parser.add_argument('--skip_data_generation', action='store_true')
     parser.add_argument("--epochs", type=int, default=100, help="number of epochs")
     parser.add_argument("--batch_size", type=int, default=8, help="size of each image batch")
     parser.add_argument("--gradient_accumulations", type=int, default=2, help="number of gradient accums before step")
@@ -75,7 +77,7 @@ if __name__ == "__main__":
     parser.add_argument("--iou_thres", type=float, default=0.5, help="iou threshold required to qualify as detected")
     parser.add_argument("--conf_thres", type=float, default=0.8, help="object confidence threshold")
 
-    
+    warnings.simplefilter('ignore')
     
     opt = parser.parse_args()
     print(opt)
@@ -112,7 +114,7 @@ if __name__ == "__main__":
     with open("image_list_valid.txt") as f:
             l_strip_valid = [s.strip() for s in f.readlines()] 
     
-    if opt.recreate_data:
+    if not opt.skip_data_generation:
         arange_dir("data/custom/images_with_bb")
         arange_dir("data/custom/images_with_bb_2")
         arange_dir("data/custom/labels_not_yolo")
@@ -389,3 +391,4 @@ if __name__ == "__main__":
         
     with open("./config/models/"+opt.model_name+".json", mode="w") as f:
         json.dump(data_dict, f, indent=4)    
+
