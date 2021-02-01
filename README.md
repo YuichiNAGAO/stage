@@ -64,7 +64,7 @@ Sce_CocoRaph900H_All_SIS_H.png
 ```
 Run the code with model name that you have created in the last step.
 ```
-test_big_image.py --model_name [model name]
+python test_big_image.py --model_name [model name]
 ```
 #### 6. Result
 You can check the trace of training and validation by Tensorboard.
